@@ -15,10 +15,14 @@ end gen_register;
 architecture behavioral of gen_register is
 
 begin
-  process(clk)
+  process(clk, aresetn)
   begin
-    if (rising_edge(clk) and load_enable='1') then
+    if (aresetn = '0') then
+      result <= (others => '0');
+    elsif (rising_edge(clk) and load_enable='1') then
       result <= input;
     end if;
   end process;
 end behavioral;
+
+
