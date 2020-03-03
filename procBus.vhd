@@ -28,13 +28,25 @@ component selCombiner is
   );
 end component;
 
-signal combinedSelect : STD_LOGIC_VECTOR(1 downto 0);
+signal combinedSelect : STD_LOGIC_VECTOR(3 downto 0);
+signal zeroes : std_logic_vector(7 downto 0);
 
 begin
-  combiner: selCombiner port map(instrSEL, dataSEL, accSEL, extdataSEL, combinedSelect, Err);
+  combinedSelect <= instrSEL & dataSEL & accSEL & extdataSEL;
+  zeroes <= (others => '0');
+
   with combinedSelect select OUTPUT <=
-    INSTRUCTION when "00",
-    DATA        when "01",
-    ACC         when "10",
-    EXTDATA     when others;
+    INSTRUCTION when "1000",
+    DATA        when "0100",
+    ACC         when "0010",
+    EXTDATA     when "0001",
+    zeroes      when others;
+
+  with combinedSelect select Err <=
+    '0' when "1000",
+    '0' when "0100",
+    '0' when "0010",
+    '0' when "0001",
+    '0' when "0000",
+    '1' when others;
 end bajs;
