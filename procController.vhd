@@ -2,68 +2,76 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
 entity procController is
-    Port ( 	master_load_enable: in STD_LOGIC;
-				opcode : in  STD_LOGIC_VECTOR (3 downto 0);
-				neq : in STD_LOGIC;
-				eq : in STD_LOGIC; 
-				CLK : in STD_LOGIC;
-				ARESETN : in STD_LOGIC;
-				pcSel : out  STD_LOGIC;
-				pcLd : out  STD_LOGIC;
-				instrLd : out  STD_LOGIC;
-				addrMd : out  STD_LOGIC;
-				dmWr : out  STD_LOGIC;
-				dataLd : out  STD_LOGIC;
-				flagLd : out  STD_LOGIC;
-				accSel : out  STD_LOGIC;
-				accLd : out  STD_LOGIC;
-				im2bus : out  STD_LOGIC;
-				dmRd : out  STD_LOGIC;
-				acc2bus : out  STD_LOGIC;
-				ext2bus : out  STD_LOGIC;
-				dispLd: out STD_LOGIC;
-				aluMd : out STD_LOGIC_VECTOR(1 downto 0));
+    Port (
+	master_load_enable: in STD_LOGIC;
+	opcode : in  STD_LOGIC_VECTOR (3 downto 0);
+	neq : in STD_LOGIC;
+	eq : in STD_LOGIC; 
+	CLK : in STD_LOGIC;
+	ARESETN : in STD_LOGIC;
+	pcSel : out  STD_LOGIC;
+	pcLd : out  STD_LOGIC;
+	instrLd : out  STD_LOGIC;
+	addrMd : out  STD_LOGIC;
+	dmWr : out  STD_LOGIC;
+	dataLd : out  STD_LOGIC;
+	flagLd : out  STD_LOGIC;
+	accSel : out  STD_LOGIC;
+	accLd : out  STD_LOGIC;
+	im2bus : out  STD_LOGIC;
+	dmRd : out  STD_LOGIC;
+	acc2bus : out  STD_LOGIC;
+	ext2bus : out  STD_LOGIC;
+	dispLd: out STD_LOGIC;
+	aluMd : out STD_LOGIC_VECTOR(1 downto 0));
 end procController;
 
 architecture Behavioral of procController is
+type state_type is (FE, DE, DE2, EX, ME);
 
-signal tmp1_out, tmp2_out, tmp_out_in, tmp_out : std_logic;
+signal current_state : state_type := FE;
+signal next_state : state_type;
 
 begin
 
-tmp1_out <= opcode(3) or opcode(2) or opcode(1) or opcode(0);
-tmp2_out <= neq xor eq;
-tmp_out_in <= tmp1_out xnor tmp2_out;
-
-process(CLK, ARESETN)
-begin
-if ARESETN='0' then
-	tmp_out <= '0';
-else
-  if rising_edge(clk) then
-   	 if master_load_enable = '1' then
-		    tmp_out <= tmp_out_in;
-	   end if;
-  end if;
+fsm : process(CLK, ARESETN)
+begin 
+-- if reset start over at FE
+if (ARESETN = '0') then
+  current_state <= FE;
+elsif (rising_edge(CLK)) then
+  current_state <= next_state;
 end if;
 end process;
 
-pcSel <= tmp_out;
-pcLd <= tmp_out;
-instrLd <= tmp_out; 
-addrMd <= tmp_out;
-dmWr <= tmp_out;
-dataLd <= tmp_out;
-flagLd <= tmp_out;
-accSel  <= tmp_out;
-accLd <= tmp_out;
-im2bus <= tmp_out;
-dmRd <= tmp_out;
-acc2bus <= tmp_out;
-ext2bus <= tmp_out;
-dispLd <= tmp_out;
-aluMd(1) <= tmp_out;
-aluMd(0) <= not tmp_out;
+next_state_process : process(current_state, opcode)
+begin
+-- if at FE always go to DE
+if (current_state = FE) then
+  next_state <= DE;
+-- if at DE and opcode is ADX, LBX or SBX goto DE2
+elsif (current_state = DE and (opcode = "1000" or opcode = "1001" or opcode = "1010")) then
+  next_state <= DE2;
+-- if at DE and opcode is SB goto ME
+elsif (current_state = DE and (opcode = "0111")) then
+  next_state <= ME;
+-- if at DE and opcode is IN, J, JEQ or JNE goto FE
+elsif (current_state = DE and (opcode = "1011" or opcode = "1100" or opcode = "1101" or opcode = "1110")) then
+  next_state <= FE;
+-- if at DE and opcode is anything that hasn't been tested yet, go to EX
+elsif (current_state = DE) then 
+  next_state <= EX;
+-- if at DE2 and b1 = 0 goto EX
+elsif (current_state = DE2 and (opcode(1) = '0')) then
+  next_state <= EX;
+-- if at DE2 and b1 = 1 goto ME 
+elsif (current_state = DE2) then
+  next_state <= ME;
+-- else, we are at a final state and need to wrap around to FE
+elsif (current_state = EX or current_state = ME) then
+  next_state <= FE;
+end if;
+end process;
 
 end Behavioral;
 
