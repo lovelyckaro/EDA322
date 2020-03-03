@@ -42,8 +42,24 @@ begin
 if (ARESETN = '0') then
   current_state <= FE;
 -- on the clocks rising edge switch to next state
-elsif (rising_edge(CLK)) then
+elsif (rising_edge(CLK) and master_load_enable = '1') then
   current_state <= next_state;
+-- reset all outputs for the next state to set them
+  pcSel <= '0';
+  pcLd  <= '0';
+  instrLd <= '0';
+  addrMd <= '0';
+  dmWr <= '0';
+  dataLd <= '0';
+  flagLd <= '0';
+  accSel <= '0';
+  accLd <= '0';
+  im2bus <= '0';
+  dmRd <= '0';
+  acc2bus <= '0';
+  ext2bus <= '0';
+  dispLd <= '0';
+  
 end if;
 end process;
 
@@ -80,10 +96,15 @@ end process;
 
 -- setting the output signals
 
--- outputs that stay the same throughout the states of an operation, for all opcodes
 -- instrLd is always 1
 instrLd <= '1';
 
+
+
+-- outputs that depend on the current state, and/or neq/eq
+output_signal_process : process(current_state, opcode, neq, eq)
+begin
+if (not (current_state = FE)) then
 -- Setting ALU mode, Sub -> "01", not -> "11", and -> "10", all others "00"or dont care
 with opcode select aluMD <=
   "01" when "0010",
@@ -108,11 +129,8 @@ with opcode select acc2bus <=
 with opcode select ext2bus <=
   '1' when "1011",
   '0' when others;
+end if;
 
-
--- outputs that depend on the current state, and/or neq/eq
-output_signal_process : process(current_state, opcode, neq, eq)
-begin
 case (opcode) is
 --   NOP   | Add  | Sub  | Not  | And  : These all share control signals, except for aluMd 
 when "0000"|"0001"|"0010"|"0011"|"0100" =>
@@ -129,7 +147,7 @@ when "0000"|"0001"|"0010"|"0011"|"0100" =>
   elsif (current_state = DE) then
     dataLd <= '1';
   end if;
-
+ 
 -- Cmp
 when "0101" =>
   pcSel <= '0';
@@ -277,6 +295,7 @@ when "1111" =>
   dmRd <= '0';
   if (current_state = EX) then
     dispLd <= '1';
+    pcLd <= '1';
   end if;
   
 when others =>
