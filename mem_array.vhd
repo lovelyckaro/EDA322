@@ -3,10 +3,6 @@ use ieee.std_logic_1164.all;
 use IEEE.NUMERIC_STD.ALL;
 use std.textio.ALL;
 
-
-
-
-
 entity mem_array 
   is generic (  
     DATA_WIDTH: integer := 12;
@@ -22,10 +18,8 @@ entity mem_array
   );
 end mem_array;
 
-
-
 architecture behavioral of mem_array is
-Type MEMORY_ARRAY is ARRAY ((2**ADDR_WIDTH) - 1 downto 0) of std_logic_vector(DATA_WIDTH-1 downto 0);
+Type MEMORY_ARRAY is ARRAY (0 to (2**ADDR_WIDTH) - 1) of std_logic_vector(DATA_WIDTH-1 downto 0);
 impure function init_memory_wfile(mif_file_name : in string) return 
 MEMORY_ARRAY is
    file mif_file : text open read_mode is mif_file_name;
@@ -47,9 +41,7 @@ begin
   begin
     if (rising_edge(clk) and WE = '1') then
       memory(to_integer(unsigned(ADDR))) <= DATAIN;
-    elsif (rising_edge(clk) and WE = '0') then
-      OUTPUT <= memory(to_integer(unsigned(ADDR)));
     end if;
   end process;
-
+  OUTPUT <= memory(to_integer(unsigned(ADDR)));
 end behavioral;
