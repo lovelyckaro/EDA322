@@ -148,25 +148,137 @@ when "0101" =>
 
 -- Lb
 when "0110" =>
+  pcSel <= '0';
+  addrMd <= '0';
+  dmWr <= '0';
+  flagLd <= '0';
+  dispLd <= '0';
+  if (current_state = EX) then
+    pcLd <= '1';
+    accSel <= '1';
+    accLd <= '1';
+    dmRd <= '1';
+  elsif (current_state = DE) then
+    dataLd <= '1';
+  end if;
+
 -- Sb
 when "0111" =>
+  pcSel <= '0';
+  addrMd <= '0';
+  dataLd <= '0';
+  flagLd <= '0';
+  accSel <= '0';
+  accLd <= '0';
+  dmRd <= '0';
+  dispLd <= '0';
+  if (current_state = ME) then
+    pcLd <= '1';
+    dmWr <= '1';
+  end if;
+
 -- ADX
 when "1000" =>
+  pcSel <= '0';
+  dmWr <= '0';
+  accSel <= '0';
+  dispLd <= '0';
+  if (current_state = DE) then
+    dataLd <= '1';
+  elsif (current_state = DE2) then
+    dataLd <= '1';
+    addrmd <= '1';
+  elsif (current_state = EX) then
+    pcLd <= '1';
+    flagLd <= '1';
+    accLd <= '1';
+    dmRd <= '1';
+  end if;
+
 -- LBX
 when "1001" =>
+  pcSel <= '0';
+  dmWr <= '0';
+  flagLd <= '0';
+  dispLd <= '0';
+  if (current_state = DE) then
+    dataLd <= '1';
+  elsif (current_state = DE2) then
+    dataLd <= '1';
+    addrmd <= '1';
+  elsif (current_state = EX) then
+    pcLd <= '1';
+    accSel <= '1';
+    accLd <= '1';
+    dmRd <= '1';
+  end if;
+
 -- SBX
 when "1010" =>
+  pcSel <= '0';
+  flagLd <= '0';
+  accSel <= '0';
+  accLd <= '0';
+  dmRd <= '0';
+  dispLd <= '0';
+  if (current_state = DE) then
+    dataLd <= '1';
+  elsif (current_state = ME) then
+    pcLd <= '1';
+    addrMd <= '1';
+    dmWr <= '1';
+  end if;
+
 -- IN
 when "1011" =>
--- J
-when "1100" =>
--- JEQ
-when "1101" =>
--- JNE
-when "1110" =>
+  pcSel <= '0';
+  addrMd <= '0';
+  dataLd <= '0';
+  flagLd <= '0';
+  accSel <= '0';
+  accLd <= '0';
+  dmRd <= '0';
+  dispLd <= '0';
+  if (current_state = DE) then
+    pcLd <= '1';
+    dmWr <= '1';
+  end if;
+
+-- J | JEQ | JNE
+when "1100"|"1101"|"1110" =>
+  addrMd <= '0';
+  dmWr <= '0';
+  dataLd <= '0';
+  flagLd <= '0';
+  accSel <= '0';
+  accLd <= '0';
+  dmRd <= '0';
+  dispLd <= '0';
+  if (current_state = DE) then
+    pcLd <= '1';
+    if (opcode = "1100") then
+      pcSel <= '1';
+    elsif (opcode = "1101" and eq = '1') then
+      pcSel <= '1';
+    elsif (opcode = "1110" and neq = '1') then
+      pcSel <= '1';
+    end if;
+  end if;
+
 -- DS
 when "1111" =>
-
+  pcSel <= '0';
+  addrMd <= '0';
+  dmWr <= '0';
+  dataLd <= '0';
+  flagLd <= '0';
+  accSel <= '0';
+  accLd <= '0';
+  dmRd <= '0';
+  if (current_state = EX) then
+    dispLd <= '1';
+  end if;
+  
 when others =>
 
 end case;
