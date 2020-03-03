@@ -2,4 +2,10 @@
 *.mti
 *.mpf
 *.wlf
+*.aux
+*.fls
+*.log
+*.pdf
+*.fdb_latexmk
+*.synctex.gz
 work/*
