@@ -34,15 +34,20 @@ signal next_state : state_type;
 
 begin
 
+-- switching between states
+
 fsm : process(CLK, ARESETN)
 begin 
 -- if reset start over at FE
 if (ARESETN = '0') then
   current_state <= FE;
+-- on the clocks rising edge switch to next state
 elsif (rising_edge(CLK)) then
   current_state <= next_state;
 end if;
 end process;
+
+-- determening the next state 
 
 next_state_process : process(current_state, opcode)
 begin
@@ -71,6 +76,100 @@ elsif (current_state = DE2) then
 elsif (current_state = EX or current_state = ME) then
   next_state <= FE;
 end if;
+end process;
+
+-- setting the output signals
+
+-- outputs that stay the same throughout the states of an operation, for all opcodes
+-- instrLd is always 1
+instrLd <= '1';
+
+-- Setting ALU mode, Sub -> "01", not -> "11", and -> "10", all others "00"or dont care
+with opcode select aluMD <=
+  "01" when "0010",
+  "11" when "0011",
+  "10" when "0001",
+  "00" when others;
+
+-- im2bus
+with opcode select im2bus <=
+  '1' when "1100",
+  '1' when "1101",
+  '1' when "1110",
+  '0' when others;
+
+-- acc2bus
+with opcode select acc2bus <=
+  '1' when "0111",
+  '1' when "1010",
+  '0' when others;
+
+-- ext2bus
+with opcode select ext2bus <=
+  '1' when "1011",
+  '0' when others;
+
+
+-- outputs that depend on the current state, and/or neq/eq
+output_signal_process : process(current_state, opcode, neq, eq)
+begin
+case (opcode) is
+--   NOP   | Add  | Sub  | Not  | And  : These all share control signals, except for aluMd 
+when "0000"|"0001"|"0010"|"0011"|"0100" =>
+  pcSel <= '0';
+  addrMd <= '0';
+  dmWr <= '0';
+  accSel <= '0';
+  dispLd <= '0';
+  if (current_state = EX) then
+    flagLd <= '1';
+    pcLd <= '1';
+    accLd <= '1';
+    dmRd <= '1';
+  elsif (current_state = DE) then
+    dataLd <= '1';
+  end if;
+
+-- Cmp
+when "0101" =>
+  pcSel <= '0';
+  addrMd <= '0';
+  dmWr <= '0';
+  accSel <= '0';
+  dispLd <= '0';
+  accLd <= '0';
+  if (current_state = EX) then
+    flagLd <= '1';
+    pcLd <= '1';
+    dmRd <= '1';
+  elsif (current_state = DE) then
+    dataLd <= '1';
+  end if;
+
+-- Lb
+when "0110" =>
+-- Sb
+when "0111" =>
+-- ADX
+when "1000" =>
+-- LBX
+when "1001" =>
+-- SBX
+when "1010" =>
+-- IN
+when "1011" =>
+-- J
+when "1100" =>
+-- JEQ
+when "1101" =>
+-- JNE
+when "1110" =>
+-- DS
+when "1111" =>
+
+when others =>
+
+end case;
 end process;
 
 end Behavioral;
