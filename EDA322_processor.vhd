@@ -22,7 +22,7 @@ entity EDA322_processor is
   );
 end EDA322_processor;
 
-architecture hellifiknow of EDA322_processor is
+architecture structural of EDA322_processor is
 component procBus is
   Port ( 
     INSTRUCTION : in  STD_LOGIC_VECTOR (7 downto 0);
@@ -209,5 +209,5 @@ begin
   -- Bus
   iBus : procBus port map (addrFromInstruction, memDataOutReged, outFromAcc, externalIn, busOut, errSig2seg, im2bus, dmRd, acc2bus, ext2bus );
   busOut2Seg <= busOut;
-end hellifiknow;
+end structural;
 
