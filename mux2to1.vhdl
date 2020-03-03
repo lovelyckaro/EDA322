@@ -2,11 +2,13 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 entity mux2to1 is
+generic( W : integer := 8);
+
 port(
-      in1: in std_logic;
-      in2: in std_logic;
+      in1: in std_logic_vector(W-1 downto 0);
+      in2: in std_logic_vector(W-1 downto 0);
       sel: in std_logic;
-      output: out std_logic
+      output: out std_logic_vector(W-1 downto 0)
 );
 end mux2to1;
 
