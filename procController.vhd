@@ -45,20 +45,6 @@ if (ARESETN = '0') then
 elsif (rising_edge(CLK) and master_load_enable = '1') then
   current_state <= next_state;
 -- reset all outputs for the next state to set them
-  pcSel <= '0';
-  pcLd  <= '0';
-  instrLd <= '0';
-  addrMd <= '0';
-  dmWr <= '0';
-  dataLd <= '0';
-  flagLd <= '0';
-  accSel <= '0';
-  accLd <= '0';
-  im2bus <= '0';
-  dmRd <= '0';
-  acc2bus <= '0';
-  ext2bus <= '0';
-  dispLd <= '0';
   
 end if;
 end process;
@@ -104,41 +90,35 @@ instrLd <= '1';
 -- outputs that depend on the current state, and/or neq/eq
 output_signal_process : process(current_state, opcode, neq, eq)
 begin
+  pcSel <= '0';
+  pcLd <= '0';
+  addrMd <= '0';
+  dmWr <= '0';
+  dataLd <= '0';
+  flagLd <= '0';
+  accSel <= '0';
+  accLd <= '0';
+  im2bus <= '0';
+  dmRd <= '0';
+  acc2bus <= '0';
+  ext2bus <= '0';
+  dispLd <= '0';
+  aluMd <= "00";
+
 if (not (current_state = FE)) then
--- Setting ALU mode, Sub -> "01", not -> "11", and -> "10", all others "00"or dont care
-with opcode select aluMD <=
-  "01" when "0010",
-  "11" when "0011",
-  "10" when "0001",
-  "00" when others;
-
--- im2bus
-with opcode select im2bus <=
-  '1' when "1100",
-  '1' when "1101",
-  '1' when "1110",
-  '0' when others;
-
--- acc2bus
-with opcode select acc2bus <=
-  '1' when "0111",
-  '1' when "1010",
-  '0' when others;
-
--- ext2bus
-with opcode select ext2bus <=
-  '1' when "1011",
-  '0' when others;
-end if;
 
 case (opcode) is
 --   NOP   | Add  | Sub  | Not  | And  : These all share control signals, except for aluMd 
 when "0000"|"0001"|"0010"|"0011"|"0100" =>
-  pcSel <= '0';
-  addrMd <= '0';
-  dmWr <= '0';
-  accSel <= '0';
-  dispLd <= '0';
+  if (opcode = "0010") then
+    aluMd <= "01";
+  elsif (opcode = "0011") then
+    aluMd <= "11";
+  elsif (opcode = "0100") then
+    aluMd <= "10";
+  end if;  
+
+
   if (current_state = EX) then
     flagLd <= '1';
     pcLd <= '1';
@@ -150,12 +130,6 @@ when "0000"|"0001"|"0010"|"0011"|"0100" =>
  
 -- Cmp
 when "0101" =>
-  pcSel <= '0';
-  addrMd <= '0';
-  dmWr <= '0';
-  accSel <= '0';
-  dispLd <= '0';
-  accLd <= '0';
   if (current_state = EX) then
     flagLd <= '1';
     pcLd <= '1';
@@ -166,11 +140,6 @@ when "0101" =>
 
 -- Lb
 when "0110" =>
-  pcSel <= '0';
-  addrMd <= '0';
-  dmWr <= '0';
-  flagLd <= '0';
-  dispLd <= '0';
   if (current_state = EX) then
     pcLd <= '1';
     accSel <= '1';
@@ -182,14 +151,7 @@ when "0110" =>
 
 -- Sb
 when "0111" =>
-  pcSel <= '0';
-  addrMd <= '0';
-  dataLd <= '0';
-  flagLd <= '0';
-  accSel <= '0';
-  accLd <= '0';
-  dmRd <= '0';
-  dispLd <= '0';
+  acc2bus <= '1';
   if (current_state = ME) then
     pcLd <= '1';
     dmWr <= '1';
@@ -197,10 +159,6 @@ when "0111" =>
 
 -- ADX
 when "1000" =>
-  pcSel <= '0';
-  dmWr <= '0';
-  accSel <= '0';
-  dispLd <= '0';
   if (current_state = DE) then
     dataLd <= '1';
   elsif (current_state = DE2) then
@@ -215,10 +173,6 @@ when "1000" =>
 
 -- LBX
 when "1001" =>
-  pcSel <= '0';
-  dmWr <= '0';
-  flagLd <= '0';
-  dispLd <= '0';
   if (current_state = DE) then
     dataLd <= '1';
   elsif (current_state = DE2) then
@@ -233,12 +187,7 @@ when "1001" =>
 
 -- SBX
 when "1010" =>
-  pcSel <= '0';
-  flagLd <= '0';
-  accSel <= '0';
-  accLd <= '0';
-  dmRd <= '0';
-  dispLd <= '0';
+  acc2bus <= '1';
   if (current_state = DE) then
     dataLd <= '1';
   elsif (current_state = ME) then
@@ -249,14 +198,7 @@ when "1010" =>
 
 -- IN
 when "1011" =>
-  pcSel <= '0';
-  addrMd <= '0';
-  dataLd <= '0';
-  flagLd <= '0';
-  accSel <= '0';
-  accLd <= '0';
-  dmRd <= '0';
-  dispLd <= '0';
+  ext2bus <= '1';
   if (current_state = DE) then
     pcLd <= '1';
     dmWr <= '1';
@@ -264,14 +206,7 @@ when "1011" =>
 
 -- J | JEQ | JNE
 when "1100"|"1101"|"1110" =>
-  addrMd <= '0';
-  dmWr <= '0';
-  dataLd <= '0';
-  flagLd <= '0';
-  accSel <= '0';
-  accLd <= '0';
-  dmRd <= '0';
-  dispLd <= '0';
+  im2bus <= '1';
   if (current_state = DE) then
     pcLd <= '1';
     if (opcode = "1100") then
@@ -285,22 +220,14 @@ when "1100"|"1101"|"1110" =>
 
 -- DS
 when "1111" =>
-  pcSel <= '0';
-  addrMd <= '0';
-  dmWr <= '0';
-  dataLd <= '0';
-  flagLd <= '0';
-  accSel <= '0';
-  accLd <= '0';
-  dmRd <= '0';
   if (current_state = EX) then
     dispLd <= '1';
     pcLd <= '1';
   end if;
   
 when others =>
-
 end case;
+end if; -- end if current_state /= FE
 end process;
 
 end Behavioral;
