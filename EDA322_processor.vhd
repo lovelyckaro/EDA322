@@ -197,8 +197,11 @@ begin
   ALU : alu_wRCA port map (OutFromAcc, BusOut, aluMd, aluOut, aluOvf, aluNEQ, aluEQ, aluZero);
   FReg : gen_register generic map (W => 4) port map (ARESETN, CLK, FlagInp, flagLd, flagOut);
   flag2seg <= flagOut;  
+  ovf <= flagOut(3);  
   neq <= flagOut(2);
   eq <= flagOut(1);
+  zero <= flagOut(0);
+  
 
   -- ACC and co.
   accMux : mux2to1 generic map (W => 8) port map (aluOut, busOut, accSel, AccIn);
