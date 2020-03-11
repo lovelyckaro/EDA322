@@ -1,8 +1,22 @@
 In lab 4 we wrote a testbench for our processor. The testbench was responsible
 for driving the inputs to the processor (\textbf{CLK}, \textbf{ARESETN} and
 \textbf{master\_load\_enable}), as well as checking the correctnes of the
-outputs from the processor. The processor was given a simple example program to
-run, this program is given in figure \ref{code:lab4}
+outputs from the processor. The testbench ran a simple example program on the
+processor, and was given the correct outputs for this program. The program code
+is given in figure \ref{code:lab4}. 
+\subsection*{Driving the inputs}
+Driving the inputs was a
+straightforward process. We begun by driving the clock (\textbf{CLK})
+switching its value between 1 and 0 every 5ns. Giving the clock a period of
+10ns. We then added a process with \textbf{CLK} as its only dependency to drive
+the other two inputs. In this process, the master load enable signal is toggled
+every time the \textbf{CLK} is changed. On every rising edge of \textbf{CLK} the
+process increments a counter \textbf{CLK\_step}, when this counter is below 2
+the reset signal is active (\textbf{ARESETN} = 0), when the counter is 2 or
+higher the reset signal is inactive (\textbf{ARESETN} = 1).
+\subsection*{Controlling the outputs}
+The correct outptus for the example program in figure \ref{code:lab4} was given
+in 
 
 \begin{figure}
     \caption{Example program in Chacc-assembly for lab 4.}
