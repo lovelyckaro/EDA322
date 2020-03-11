@@ -1,0 +1,20 @@
+In lab 4 we wrote a testbench for our processor. The testbench was responsible
+for driving the inputs to the processor (\textbf{CLK}, \textbf{ARESETN} and
+\textbf{master\_load\_enable}), as well as checking the correctnes of the
+outputs from the processor. The processor was given a simple example program to
+run, this program is given in figure \ref{code:lab4}
+
+\begin{figure}
+    \caption{Example program in Chacc-assembly for lab 4.}
+    \label{code:lab4}
+    \centering
+    \begin{lstlisting}[language=c]
+    Load Byte 00000001  // ACC = DM[1]
+    Add 00000000        // ACC = ACC + DM[0]
+    Display             // Move ACC to Display Reg
+    Store byte 00000001 // DM[1] = acc
+    subtract 00000000   // ACC = ACC - DM[0]
+    Store 00000000      // DM[0] = ACC;
+    Jump 00000000       // start over
+    \end{lstlisting}
+\end{figure}
