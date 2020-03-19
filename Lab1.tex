@@ -12,9 +12,9 @@ carry adder. We did not do the optional carry lookahead adder.
 
 We then used the adder to make a comparator, the comparator takes the two inputs
 and subtracts one from the other. To do the subtraction we NOT the input and set
-\textbf{CIN} = 1, this calculates the 2's complement. The comparator then checks
-if the result is zero, if it is \textbf{EQ} = 1, else \textbf{EQ} = 0. The
-\textbf{NEQ} signal is just the opposite of \textbf{EQ}.
+\textbf{CIN} = 1, this calculates the 2's complement of that number. The 
+comparator then checks if the result is zero, if it is \textbf{EQ} = 1, else 
+\textbf{EQ} = 0. The \textbf{NEQ} signal is just the opposite of \textbf{EQ}.
 
 The AND operation was implemented using the built in AND between
 STD\_LOGIC\_VECTORs. The NOT operation was a bit different, as it only uses one
