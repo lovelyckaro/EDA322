@@ -4,19 +4,6 @@ for driving the inputs to the processor (\textbf{CLK}, \textbf{ARESETN} and
 outputs from the processor. The testbench ran a simple example program on the
 processor, and was given the correct outputs for this program. The program code
 is given in figure \ref{code:lab4}. 
-\subsection*{Driving the inputs}
-Driving the inputs was a
-straightforward process. We begun by driving the clock (\textbf{CLK})
-switching its value between 1 and 0 every 5ns. Giving the clock a period of
-10ns. We then added a process with \textbf{CLK} as its only dependency to drive
-the other two inputs. In this process, the master load enable signal is toggled
-every time the \textbf{CLK} is changed. On every rising edge of \textbf{CLK} the
-process increments a counter \textbf{CLK\_step}, when this counter is below 2
-the reset signal is active (\textbf{ARESETN} = 0), when the counter is 2 or
-higher the reset signal is inactive (\textbf{ARESETN} = 1).
-\subsection*{Controlling the outputs}
-The correct outptus for the example program in figure \ref{code:lab4} was given
-in 
 
 \begin{figure}
     \caption{Example program in Chacc-assembly for lab 4.}
@@ -30,5 +17,40 @@ in
     subtract 00000000   // ACC = ACC - DM[0]
     Store 00000000      // DM[0] = ACC;
     Jump 00000000       // start over
+    \end{lstlisting}
+\end{figure}
+
+\subsection*{Driving the inputs}
+Driving the inputs was a
+straightforward process. We begun by driving the clock (\textbf{CLK})
+switching its value between 1 and 0 every 5ns. Giving the clock a period of
+10ns. We then added a process with \textbf{CLK} as its only dependency to drive
+the other two inputs. In this process, the master load enable signal is toggled
+every time the \textbf{CLK} is changed. On every rising edge of \textbf{CLK} the
+process increments a counter \textbf{CLK\_step}, when this counter is below 2
+the reset signal is active (\textbf{ARESETN} = 0), when the counter is 2 or
+higher the reset signal is inactive (\textbf{ARESETN} = 1).
+\subsection*{Controlling the outputs}
+The correct outptus for the example program in figure \ref{code:lab4} were given
+in a series of files for the different output signals. For each output we made
+an array of values which where filled by reading these files. Then, for each
+output a process was created, so that each time that particular output changed
+an assertion was run checking it for its corresponding value in the array. The
+VHDL for one such process is given in figure \ref{code:lab4Process}. To
+determine when we were done we stopped the program when the \textbf{disp2seg}
+signal showed $90_{16}$
+\begin{figure}
+    \caption{VHDL process for checking the values of acc2seg. }
+    \label{code:lab4Process}
+    \centering
+    \begin{lstlisting}[language=vhdl]
+    process(acc2seg)
+    begin
+    if (ARESETN = '1') then
+      assert (acctrace(acc_step) = acc2seg)
+        report "acc is not what it should be.";
+      acc_step <= acc_step + 1;
+    end if;
+    end process;
     \end{lstlisting}
 \end{figure}
